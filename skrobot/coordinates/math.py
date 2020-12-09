@@ -569,7 +569,7 @@ def normalize_vector(v, ord=2):
     array([0., 0., 0.])
     """
     v = np.array(v, dtype=np.float64)
-    if np.allclose(v, 0) is True:
+    if np.count_nonzero(v) == 0:
         return v
     return v / np.linalg.norm(v, ord=ord)
 

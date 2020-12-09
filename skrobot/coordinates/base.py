@@ -909,11 +909,12 @@ class Coordinates(object):
     def newcoords(self, c, pos=None):
         """Update of coords is always done through newcoords."""
         if pos is not None:
-            self.rotation = np.copy(c)
-            self.translation = np.copy(pos)
+            # print(c.shape)
+            self._rotation = np.copy(c)
+            self._translation = np.copy(pos)
         else:
-            self.rotation = np.copy(c.rotation)
-            self.translation = np.copy(c.translation)
+            self._rotation = np.copy(c.rotation)
+            self._translation = np.copy(c.translation)
         return self
 
     def __mul__(self, other_c):
@@ -1083,10 +1084,10 @@ class CascadedCoords(Coordinates):
 
     def rotate_with_matrix(self, matrix, wrt):
         if wrt == 'local' or wrt == self:
-            self.rotation = np.dot(self.rotation, matrix)
+            self._rotation = np.dot(self.rotation, matrix)
             return self.newcoords(self.rotation, self.translation)
         elif wrt == 'parent' or wrt == self.parent:
-            self.rotation = np.matmul(matrix, self.rotation)
+            self._rotation = np.matmul(matrix, self.rotation)
             return self.newcoords(self.rotation, self.translation)
         else:
             parent_coords = self.parentcoords()
@@ -1097,7 +1098,7 @@ class CascadedCoords(Coordinates):
                 matrix = np.matmul(matrix, wrt_rot.T)
             matrix = np.matmul(matrix, parent_rot)
             matrix = np.matmul(parent_rot.T, matrix)
-            self.rotation = np.matmul(matrix, self.rotation)
+            self._rotation = np.matmul(matrix, self.rotation)
             return self.newcoords(self.rotation, self.translation)
 
     def rotate(self, theta, axis, wrt='local'):

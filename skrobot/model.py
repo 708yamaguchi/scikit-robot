@@ -10,6 +10,8 @@ from ordered_set import OrderedSet
 import six
 import trimesh
 
+from skrobot.coordinates.math import rpy2quaternion
+from skrobot.coordinates.math import quaternion2matrix
 from skrobot.coordinates import _wrap_axis
 from skrobot.coordinates import CascadedCoords
 from skrobot.coordinates import Coordinates
@@ -408,8 +410,8 @@ class LinearJoint(Joint):
                                    .format(self, v, self.min_angle))
                 v = self.min_angle
             self._joint_angle = v
-            self.child_link.rotation = self.default_coords.rotation.copy()
-            self.child_link.translation = \
+            self.child_link._rotation = self.default_coords.rotation.copy()
+            self.child_link._translation = \
                 self.default_coords.translation.copy()
             self.child_link.translate(self._joint_angle * self.axis)
 
@@ -2331,6 +2333,7 @@ class RobotModel(CascadedLink):
             else:
                 rpy = rpy_angle(j.origin[:3, :3])[0]
                 xyz = j.origin[:3, 3]
+            rpy = quaternion2matrix(rpy2quaternion(rpy))
             link_maps[j.child].newcoords(rpy,
                                          xyz)
             # TODO(fix automatically update default_coords)
