@@ -68,12 +68,13 @@ def transform_coords(c1, c2, out=None):
            [-5.00000000e-01,  8.66025404e-01,  2.77555756e-17]])
     """
     if out is None:
-        out = Coordinates()
+        out = Coordinates(check_valid=False)
     elif not isinstance(out, Coordinates):
         raise TypeError("Input type should be skrobot.coordinates.Coordinates")
-    out.translation = c1.translation + np.dot(c1.rotation, c2.translation)
-    out.rotation = quaternion_normalize(
-        quaternion_multiply(c1.quaternion, c2.quaternion))
+    out._translation = c1.translation + np.dot(c1.rotation, c2.translation)
+    out._rotation = np.dot(c1.rotation, c2.rotation)
+    # out.rotation = quaternion_normalize(
+    #     quaternion_multiply(c1.quaternion, c2.quaternion))
     return out
 
 
@@ -100,14 +101,19 @@ class Coordinates(object):
                  pos=[0, 0, 0],
                  rot=np.eye(3),
                  name=None,
-                 hook=None):
-        if (isinstance(pos, list) or isinstance(pos, np.ndarray)):
-            T = np.array(pos, dtype=np.float64)
-            if T.shape == (4, 4):
-                pos = T[:3, 3]
-                rot = T[:3, :3]
-        self.rotation = rot
-        self.translation = pos
+                 hook=None,
+                 check_valid=True):
+        if check_valid:
+            if (isinstance(pos, list) or isinstance(pos, np.ndarray)):
+                T = np.array(pos, dtype=np.float64)
+                if T.shape == (4, 4):
+                    pos = T[:3, 3]
+                    rot = T[:3, :3]
+            self.rotation = rot
+            self.translation = pos
+        else:
+            self._rotation = rot
+            self._translation = pos
         if name is None:
             name = ''
         self.name = name
@@ -177,7 +183,8 @@ class Coordinates(object):
             self._q = rpy2quaternion(rotation)
             rotation = quaternion2matrix(self._q)
         else:
-            self._q = matrix2quaternion(rotation)
+            pass
+            # self._q = matrix2quaternion(rotation)
 
         # Convert lists and tuples
         if type(rotation) in (list, tuple):
@@ -466,7 +473,8 @@ class Coordinates(object):
         >>> c.quaternion
         array([0.8236391 , 0.1545085 , 0.47552826, 0.26761657])
         """
-        return self._q
+        return matrix2quaternion(self.rotation)
+        # return self._q
 
     @property
     def dual_quaternion(self):
@@ -857,8 +865,9 @@ class Coordinates(object):
 
     def copy_coords(self):
         """Return a deep copy of the Coordinates."""
-        return Coordinates(pos=copy.deepcopy(self.worldpos()),
-                           rot=copy.deepcopy(self.worldrot()))
+        return Coordinates(pos=np.copy(self.worldpos()),
+                           rot=np.copy(self.worldrot()),
+                           check_valid=False)
 
     def coords(self):
         """Return a deep copy of the Coordinates."""
@@ -900,11 +909,11 @@ class Coordinates(object):
     def newcoords(self, c, pos=None):
         """Update of coords is always done through newcoords."""
         if pos is not None:
-            self.rotation = copy.deepcopy(c)
-            self.translation = copy.deepcopy(pos)
+            self.rotation = np.copy(c)
+            self.translation = np.copy(pos)
         else:
-            self.rotation = copy.deepcopy(c.rotation)
-            self.translation = copy.deepcopy(c.translation)
+            self.rotation = np.copy(c.rotation)
+            self.translation = np.copy(c.translation)
         return self
 
     def __mul__(self, other_c):
