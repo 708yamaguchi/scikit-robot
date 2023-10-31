@@ -236,6 +236,7 @@ def _load_meshes(filename):
         if ext.lower() in ['.stp', '.step']:
             meshes = trimesh.Trimesh(
                 **trimesh.interfaces.gmsh.load_gmsh(filename))
+            meshes.vertices *= 0.001
         else:
             meshes = trimesh.load(filename)
     except Exception as e:
