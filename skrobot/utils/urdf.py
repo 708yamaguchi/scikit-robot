@@ -232,7 +232,12 @@ def _load_meshes(filename):
         The meshes loaded from the file.
     """
     try:
-        meshes = trimesh.load(filename)
+        _, ext = os.path.splitext(filename)
+        if ext.lower() in ['.stp', '.step']:
+            meshes = trimesh.Trimesh(
+                **trimesh.interfaces.gmsh.load_gmsh(filename))
+        else:
+            meshes = trimesh.load(filename)
     except Exception as e:
         logger.error("Failed to load meshes from {}. Error: {}"
                      .format(filename, e))
