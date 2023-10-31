@@ -237,6 +237,9 @@ def _load_meshes(filename):
             meshes = trimesh.Trimesh(
                 **trimesh.interfaces.gmsh.load_gmsh(filename))
             meshes.vertices *= 0.001
+        if ext.lower() in ['.3dxml']:
+            meshes = trimesh.load(filename)
+            meshes = meshes.scaled(0.001)
         else:
             meshes = trimesh.load(filename)
     except Exception as e:
