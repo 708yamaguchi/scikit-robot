@@ -51,6 +51,7 @@ from skrobot.collision.geometry import Sphere
 
 # Robot collision
 from skrobot.collision.robot_collision import LinkCollisionGeometry
+from skrobot.collision.robot_collision import primitive_obstacle_to_geometry
 from skrobot.collision.robot_collision import RobotCollisionChecker
 
 # Mesh self-collision + joint-limit sweep (needs optional python-fcl)
@@ -83,6 +84,7 @@ __all__ = [
     # Robot collision
     'RobotCollisionChecker',
     'LinkCollisionGeometry',
+    'primitive_obstacle_to_geometry',
     # Mesh self-collision + joint-limit sweep
     'SelfCollision',
     'sweep_limits',
